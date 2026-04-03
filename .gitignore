@@ -13,3 +13,7 @@ live-build/
 # OS junk
 .DS_Store
 Thumbs.db
+
+# Editor
+*.swp
+*~

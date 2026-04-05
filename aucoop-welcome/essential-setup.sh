@@ -4,6 +4,8 @@ set -euo pipefail
 
 echo "Installing multimedia codecs..."
 apt-get update -qq
+echo "Installing initial updates..."
+DEBIAN_FRONTEND=noninteractive apt-get upgrade -y
 DEBIAN_FRONTEND=noninteractive apt-get install -y mint-meta-codecs
 
 if command -v ubuntu-drivers >/dev/null 2>&1; then

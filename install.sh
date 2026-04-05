@@ -83,6 +83,7 @@ run_step "$INSTALL_DIR/panel.sh"
 run_step "$INSTALL_DIR/search-aliases.sh"
 run_step "$INSTALL_DIR/menu-cleanup.sh"
 run_step "$INSTALL_DIR/branding.sh"
+run_step "$INSTALL_DIR/menu-button.sh"
 run_step "$INSTALL_DIR/aucoop-workbench.sh"
 run_step "$INSTALL_DIR/aucoop-welcome.sh"
 

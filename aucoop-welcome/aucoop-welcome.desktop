@@ -1,0 +1,10 @@
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=AUCOOP Welcome
+Comment=Install optional AUCOOP software and view setup progress
+Exec=python3 /opt/aucoop-welcome/aucoop_welcome.py
+Icon=/usr/share/pixmaps/aucoop-symbol.png
+Terminal=false
+Categories=Utility;Education;
+Keywords=aucoop;welcome;setup;kiwix;wikipedia;offline;optional;assistant;

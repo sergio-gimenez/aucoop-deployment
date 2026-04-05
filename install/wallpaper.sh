@@ -25,6 +25,7 @@ fi
 echo "  Setting wallpaper..."
 dconf write /org/cinnamon/desktop/background/picture-uri "'file://$WALLPAPER'"
 dconf write /org/cinnamon/desktop/background/picture-options "'zoom'"
+dconf write /org/cinnamon/desktop/screensaver/screensaver-name "'default'" 2>/dev/null || true
 dconf write /org/cinnamon/desktop/screensaver/picture-uri "'file://$WALLPAPER'" 2>/dev/null || true
 dconf write /org/cinnamon/desktop/screensaver/picture-options "'zoom'" 2>/dev/null || true
 
@@ -36,4 +37,14 @@ python3 /usr/share/cinnamon-screensaver/cinnamon-screensaver-command.py --deacti
 if [ -f /var/lib/AccountsService/users/"$USER" ]; then
   sudo sed -i '/^BackgroundFile=/d' /var/lib/AccountsService/users/"$USER"
   printf 'BackgroundFile=%s\n' "$WALLPAPER" | sudo tee -a /var/lib/AccountsService/users/"$USER" >/dev/null
+fi
+
+# LightDM/Slick Greeter uses its own config for the login/greeter background.
+if [ -d /etc/lightdm ]; then
+  sudo mkdir -p /etc/lightdm/slick-greeter.conf.d
+  sudo tee /etc/lightdm/slick-greeter.conf.d/90-aucoop-background.conf >/dev/null <<EOF
+[Greeter]
+background=$WALLPAPER
+draw-user-backgrounds=false
+EOF
 fi

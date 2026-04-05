@@ -10,6 +10,8 @@ USER_IMAGE_SOURCE="$SCRIPT_DIR/assets/user-image.jpg"
 USER_IMAGE_DEST="/var/lib/AccountsService/icons/aucoop"
 USER_ACCOUNT_FILE="/var/lib/AccountsService/users/aucoop"
 USER_FACE_FILE="$HOME/.face"
+WELCOME_ICON_SOURCE="$SCRIPT_DIR/assets/aucoop-symbol.png"
+WELCOME_ICON_DEST="/usr/share/pixmaps/aucoop-symbol.png"
 
 if [ ! -f "$LOGO_SOURCE" ]; then
   echo "  No AUCOOP logo found at $LOGO_SOURCE — skipping."
@@ -31,4 +33,8 @@ if [ -f "$USER_IMAGE_SOURCE" ]; then
     printf '[User]\n' | sudo tee "$USER_ACCOUNT_FILE" >/dev/null
   fi
   printf 'Icon=%s\n' "$USER_IMAGE_DEST" | sudo tee -a "$USER_ACCOUNT_FILE" >/dev/null
+fi
+
+if [ -f "$WELCOME_ICON_SOURCE" ]; then
+  sudo cp "$WELCOME_ICON_SOURCE" "$WELCOME_ICON_DEST"
 fi

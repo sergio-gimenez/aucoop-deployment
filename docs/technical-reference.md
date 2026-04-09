@@ -42,9 +42,18 @@ git submodule update --init --recursive
 bash install.sh
 ```
 
-## What the script does
+## Architecture
 
-The install script takes a stock Linux Mint 22.x Cinnamon install and applies the following:
+AUCOOP Mint follows a Mint-first layering model:
+
+1. **Base OS:** upstream Linux Mint remains responsible for installation, hardware support, kernel, drivers, repositories, and system upgrades.
+2. **AUCOOP provisioning:** `install.sh` and `install/*.sh` apply the opinionated AUCOOP defaults on top of a fresh Mint install.
+3. **First boot:** AUCOOP Welcome finishes the slow, hardware-sensitive, or optional steps after login, then removes its autostart entry once essential setup succeeds.
+4. **Delivery:** `boot.sh` is the current delivery entrypoint; a future Mint-based AUCOOP ISO should trigger the same provisioning flow instead of replacing it. The Clonezilla ISO stays a separate recovery tool.
+
+## What the provisioning script does
+
+The provisioning script takes a stock Linux Mint 22.x Cinnamon install and applies the following:
 
 ### Apps removed
 - Firefox (replaced by Chrome)
@@ -56,6 +65,13 @@ The install script takes a stock Linux Mint 22.x Cinnamon install and applies th
 - **Google Chrome** -- default browser
 - **OnlyOffice Desktop Editors** -- default for all office document types (.doc, .docx, .xls, .xlsx, .ppt, .pptx, .odt, .ods, .odp, etc.)
 - **Flathub** -- added as Flatpak remote for Software Manager
+
+### First-boot tasks deferred to AUCOOP Welcome
+- **System updates** -- bring the machine up to date after the desktop is usable
+- **Multimedia codecs** -- install Mint codecs on first boot instead of during base provisioning
+- **Recommended hardware drivers** -- run `ubuntu-drivers autoinstall` when available
+- **Optional extras** -- Kiwix, local AI, and future modules
+- **Workbench registration** -- register the device after the operator has credentials ready
 
 ### Desktop customization
 - **Theme**: Mint-Y-Blue (light mode always)
@@ -74,8 +90,8 @@ The install script takes a stock Linux Mint 22.x Cinnamon install and applies th
 ```
 .
 ├── boot.sh                        # curl|bash entry point
-├── install.sh                     # Main orchestrator
-├── install/                       # Modular install scripts
+├── install.sh                     # Main AUCOOP provisioning entrypoint
+├── install/                       # Base provisioning modules for fresh Mint installs
 │   ├── remove-apps.sh             #   Remove unwanted default apps
 │   ├── chrome.sh                  #   Install Chrome, set as default
 │   ├── onlyoffice.sh              #   Install OnlyOffice, set MIME defaults
@@ -88,7 +104,9 @@ The install script takes a stock Linux Mint 22.x Cinnamon install and applies th
 │   ├── panel.sh                   #   Panel favorites
 │   ├── search-aliases.sh          #   Menu search aliases
 │   ├── menu-cleanup.sh            #   Hide duplicate/clutter launchers
-│   └── branding.sh                #   AUCOOP logo and user avatar
+│   ├── branding.sh                #   AUCOOP logo and user avatar
+│   ├── aucoop-workbench.sh        #   Install Workbench
+│   └── aucoop-welcome.sh          #   Install Welcome app and first-login autostart
 ├── assets/                        # Icons, wallpaper, logo
 │   ├── software-manager-icon.png  #   Download-arrow icon (512x512)
 │   ├── AUCOOP_logotip.png         #   AUCOOP logo banner
@@ -98,6 +116,7 @@ The install script takes a stock Linux Mint 22.x Cinnamon install and applies th
 │       ├── onlyoffice-document.png
 │       ├── onlyoffice-spreadsheet.png
 │       └── onlyoffice-presentation.png
+├── aucoop-welcome/                # First-login setup UI and optional modules
 ├── aucoop-workbench/              # Pinned upstream Workbench submodule
 ├── configs/                       # ISO/PXE deployment configs
 │   ├── grub.cfg                   #   UEFI boot menu (USB ISO)
@@ -105,16 +124,33 @@ The install script takes a stock Linux Mint 22.x Cinnamon install and applies th
 │   ├── custom-ocs                 #   Clonezilla restore script
 │   ├── grub-pxe.cfg               #   GRUB config for PXE server
 │   └── auto-restore.sh            #   Auto-detect disk for PXE
-├── build-iso.sh                   # ISO build script
+├── build-iso.sh                   # Clonezilla-based recovery ISO builder
 └── README.md
 ```
 
 ## Deployment workflow
 
-1. **Install** Linux Mint 22.3 Cinnamon on one machine (user: `aucoop`, password: `aucoop`)
-2. **Run** `boot.sh` to apply all customizations
-3. **Capture** a Clonezilla image from the configured machine
-4. **Deploy** the image to all target machines via USB ISO or PXE
+### Current provisioning flow
+
+1. **Install** Linux Mint 22.3 Cinnamon
+2. **Run** `boot.sh` or `install.sh` to apply the AUCOOP provisioning layer
+3. **Log in** and let AUCOOP Welcome complete updates, codecs, drivers, and optional extras
+4. **Reboot** once first-boot setup is complete
+
+### Recovery flow
+
+1. **Install** Linux Mint 22.3 Cinnamon on one reference machine
+2. **Run** `boot.sh` to apply all AUCOOP customizations
+3. **Finish** first-boot tasks in AUCOOP Welcome
+4. **Capture** a Clonezilla image from the configured machine
+5. **Deploy** the image to all target machines via USB ISO or PXE
+
+### Future public installer flow
+
+1. **Remaster** the official Mint ISO, not a machine image
+2. **Bundle** AUCOOP assets and provisioning entrypoints into the live/install environment
+3. **Trigger** the same AUCOOP provisioning flow automatically after Mint is installed
+4. **Finish** with AUCOOP Welcome on first login
 
 ## Testing in QEMU
 

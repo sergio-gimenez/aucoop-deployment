@@ -1,0 +1,11 @@
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=AUCOOP Welcome
+Comment=Finish essential AUCOOP setup after first login
+Exec=python3 /opt/aucoop-welcome/aucoop_welcome.py
+Icon=/usr/share/pixmaps/aucoop-symbol.png
+Terminal=false
+Categories=Utility;Education;
+X-GNOME-Autostart-enabled=true
+OnlyShowIn=X-Cinnamon;

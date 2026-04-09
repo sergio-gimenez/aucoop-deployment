@@ -20,6 +20,8 @@ MODULE_INSTALLER = APP_DIR / "install-module.sh"
 AI_INSTALLER = APP_DIR / "install-local-ai.sh"
 PKEXEC_RUNNER = APP_DIR / "pkexec-runner.sh"
 WORKBENCH_RUNNER = APP_DIR / "run-workbench-registration.sh"
+AUTOSTART_FILE = Path.home() / ".config/autostart/aucoop-welcome.desktop"
+ESSENTIAL_DONE_MARKER = Path.home() / ".local/state/aucoop-welcome/essential-setup-complete"
 
 
 def load_config():
@@ -74,6 +76,9 @@ def filtered_ai_models(ai_cfg, show_more):
 
 class WelcomeWindow(Gtk.Window):
     def __init__(self):
+        if ESSENTIAL_DONE_MARKER.exists() and AUTOSTART_FILE.exists():
+            AUTOSTART_FILE.unlink(missing_ok=True)
+
         super().__init__(title="AUCOOP Mint Welcome")
         self.set_default_size(760, 520)
         self.set_border_width(16)
@@ -81,7 +86,7 @@ class WelcomeWindow(Gtk.Window):
         self.config = load_config()
         self.process = None
         self.sudo_ready = False
-        self.essential_complete = False
+        self.essential_complete = ESSENTIAL_DONE_MARKER.exists()
         self.current_ai_model_id = None
 
         outer = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=12)
@@ -111,9 +116,11 @@ class WelcomeWindow(Gtk.Window):
         box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=12)
         box.set_border_width(12)
 
-        self.status_label = Gtk.Label(
-            label="This may take a few minutes."
-        )
+        status_text = "This may take a few minutes."
+        if self.essential_complete:
+            status_text = "Essential setup is already complete. You can use the other tabs any time."
+
+        self.status_label = Gtk.Label(label=status_text)
         self.status_label.set_xalign(0)
         self.status_label.set_line_wrap(True)
         box.pack_start(self.status_label, False, False, 0)
@@ -123,6 +130,7 @@ class WelcomeWindow(Gtk.Window):
 
         self.start_button = Gtk.Button(label="Start setup")
         self.start_button.connect("clicked", self.on_start_setup)
+        self.start_button.set_visible(not self.essential_complete)
         box.pack_start(self.start_button, False, False, 0)
 
         self.notebook.append_page(box, Gtk.Label(label="Setup"))
@@ -368,6 +376,7 @@ class WelcomeWindow(Gtk.Window):
         self.progress.stop()
         if returncode == 0:
             self.essential_complete = True
+            self.mark_essential_setup_complete()
             self.status_label.set_text("Setup complete\n\nPlease reboot now to finish AUCOOP Mint setup.")
             self.start_button.set_visible(False)
         else:
@@ -519,7 +528,10 @@ class WelcomeWindow(Gtk.Window):
                 if found_url:
                     GLib.idle_add(self.show_registration_result, found_url)
             else:
-                GLib.idle_add(self.registration_status_label.set_text, "Registration failed. Check Advanced details.")
+                GLib.idle_add(
+                    self.registration_status_label.set_text,
+                    "Registration failed. Make sure Workbench dependencies are installed and it is running as root. Check Advanced details.",
+                )
 
             GLib.idle_add(self.registration_spinner.stop)
             GLib.idle_add(self.registration_button.set_sensitive, True)
@@ -570,6 +582,11 @@ class WelcomeWindow(Gtk.Window):
         if self.ai_check and self.ai_check.get_active():
             has_selection = True
         self.install_optional_button.set_sensitive(has_selection)
+
+    def mark_essential_setup_complete(self):
+        ESSENTIAL_DONE_MARKER.parent.mkdir(parents=True, exist_ok=True)
+        ESSENTIAL_DONE_MARKER.write_text("complete\n", encoding="utf-8")
+        AUTOSTART_FILE.unlink(missing_ok=True)
 
     def pin_local_ai_launcher(self):
         launcher = "aucoop-local-ai.desktop"

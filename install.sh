@@ -66,14 +66,12 @@ run_step() {
 # Phase 1: Remove unwanted apps (before installing new ones)
 run_step "$INSTALL_DIR/remove-apps.sh"
 
-# Phase 2: Install apps
+# Phase 2: Install apps and base system provisioning
 run_step "$INSTALL_DIR/chrome.sh"
 run_step "$INSTALL_DIR/onlyoffice.sh"
 run_step "$INSTALL_DIR/flathub.sh"
-run_step "$INSTALL_DIR/codecs.sh"
-run_step "$INSTALL_DIR/drivers.sh"
 
-# Phase 3: Desktop customization
+# Phase 3: Desktop customization and first-boot entrypoints
 run_step "$INSTALL_DIR/theme.sh"
 run_step "$INSTALL_DIR/wallpaper.sh"
 run_step "$INSTALL_DIR/cursor.sh"

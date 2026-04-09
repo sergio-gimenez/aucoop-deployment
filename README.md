@@ -39,9 +39,18 @@ git submodule update --init --recursive
 bash install.sh
 ```
 
+## Architecture
+
+AUCOOP Mint stays layered on top of upstream Linux Mint:
+
+- **Base OS:** Linux Mint provides the installer, kernel, drivers, repos, and update path.
+- **AUCOOP provisioning:** `install.sh` and `install/*.sh` turn a vanilla Mint install into AUCOOP Mint.
+- **First boot:** AUCOOP Welcome finishes machine-specific setup after the first login.
+- **Delivery:** today this is `boot.sh`; later it can also be a Mint-based AUCOOP ISO. The Clonezilla ISO remains a separate recovery path.
+
 ## How it works
 
-The installer is a set of small shell scripts, each doing one thing:
+The provisioning layer is a set of small shell scripts, each doing one thing:
 
 | Script | What it does |
 |---|---|
@@ -54,6 +63,16 @@ The installer is a set of small shell scripts, each doing one thing:
 | `branding.sh` | Installs AUCOOP logo and menu icon |
 | `aucoop-welcome.sh` | Installs the Welcome app for first-boot setup |
 | `aucoop-workbench.sh` | Installs Workbench for device registration |
+
+After `install.sh` completes, AUCOOP Welcome autostarts on first login to handle:
+
+- system updates
+- multimedia codecs
+- recommended hardware drivers
+- optional extras such as Kiwix and local AI
+- device registration in Workbench
+
+Once essential setup succeeds, the autostart entry removes itself and the launcher remains available from the desktop and app menu.
 
 See [`docs/technical-reference.md`](docs/technical-reference.md) for the full repository structure and deployment workflow.
 

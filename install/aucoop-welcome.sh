@@ -5,6 +5,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 SOURCE_DIR="$SCRIPT_DIR/aucoop-welcome"
 TARGET_DIR="/opt/aucoop-welcome"
 DESKTOP_DIR="$HOME/Desktop"
+AUTOSTART_DIR="$HOME/.config/autostart"
 
 echo "  Installing AUCOOP Welcome..."
 
@@ -17,3 +18,6 @@ mkdir -p "$DESKTOP_DIR"
 cp /usr/share/applications/aucoop-welcome.desktop "$DESKTOP_DIR/aucoop-welcome.desktop"
 chmod +x "$DESKTOP_DIR/aucoop-welcome.desktop"
 gio set "$DESKTOP_DIR/aucoop-welcome.desktop" metadata::trusted true 2>/dev/null || true
+
+mkdir -p "$AUTOSTART_DIR"
+cp "$SOURCE_DIR/aucoop-welcome-autostart.desktop" "$AUTOSTART_DIR/aucoop-welcome.desktop"

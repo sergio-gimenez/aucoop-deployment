@@ -4,8 +4,14 @@
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 SOURCE_DIR="$SCRIPT_DIR/aucoop-workbench"
 TARGET_DIR="/opt/aucoop-workbench"
+REQUIRED_COMMANDS=(smartctl lshw hwinfo dmidecode inxi qrencode)
 
 echo "  Installing AUCOOP Workbench..."
+
+if [ ! -f "$SOURCE_DIR/workbench-script.py" ]; then
+  echo "  ERROR: AUCOOP Workbench source not found at $SOURCE_DIR"
+  exit 1
+fi
 
 sudo mkdir -p "$TARGET_DIR"
 sudo cp -r "$SOURCE_DIR"/* "$TARGET_DIR/"
@@ -21,3 +27,10 @@ sudo DEBIAN_FRONTEND=noninteractive apt-get install -y \
   inxi \
   qrencode \
   pciutils
+
+for cmd in "${REQUIRED_COMMANDS[@]}"; do
+  if ! command -v "$cmd" >/dev/null 2>&1; then
+    echo "  ERROR: required Workbench command '$cmd' is missing after installation"
+    exit 1
+  fi
+done
